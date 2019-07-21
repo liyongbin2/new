@@ -1,0 +1,131 @@
+#include<stdio.h>
+#define M 1000
+int n,m;//物品个数，属性个数
+int a[M][M];//物品的属性
+int b[M];//存放约束条件，就是背包容量
+double v[M];//存放价值
+double bestvalue=0;//存放最优解
+double curvalue=0;//存放当前价值
+int best[M];//存放所取物品,已经取了的
+double x[M]={0,0,0};   //x[i]=1代表物品i放入背包，0代表不放
+double d[M];//存放当前已取的物品，并把其各属性存放在其中，如果取到多个则累加约束条件
+int left[M];
+int lianxupanduan(int k,int i,int t,double d[])//定义一个连续判断的函数，i是指0或1，t是指当前节点（获取的是back函数中的t），d[]是指当前所选物品属性全部加起来的值
+{
+	if(k<m) if(d[k]+i*a[k][t]<=b[k])//如果当前所选物品属性全部加起来的值小于等于背包容量
+		{
+			  lianxupanduan(k+1,i,t,d);//递归lianxupanduan函数，如果全部满足约束，则return 1，也就是判断为真，向下执行back函数
+	
+		}
+				else 
+				{
+					return 0;//否则返回0，判断为假
+				}
+	
+}
+
+void back(int t)
+{
+	if(t>n)//遍历当前根节点
+	{
+	 if(curvalue>bestvalue)	//判断当前价值是否大于最优解
+	 {
+		 bestvalue=curvalue;//将当前价值赋予最优解
+		 for(int i=0;i<n;i++)  best[i]=x[i];//存储取到的物品
+		 
+	 }
+	}
+	else
+	{
+		for(int i=0;i<=1;i++) 
+		{//放还是不放
+			double bound(int i);//定义上界函数，获取当前节点，调用上界函数
+			x[t]=i;
+		
+
+				//添加判断所选物件是否大于约束条件
+				
+				          if(lianxupanduan(0,i,t,d))
+					  {   
+						   for(int c=0;c<m;c++)
+						   {
+                              d[c]+=a[c][t]*x[t];//累加当前所选物品的属性
+							 
+						   }
+					          curvalue+=v[t]*x[t];//累加所选物品的价值
+					          back(t+1);//执行回溯
+					       for(int f=0;f<m;f++)
+						   {
+                              d[f]-=a[f][t]*x[t];//如果超出了容量，减去上一次所选物品的属性
+						   }
+					  
+					          curvalue-=v[t]*x[t];  //减去上一次物品的价值
+					  }
+						  if(bound(i+1)>bestvalue)//判断是否符合条件，如果不符合则进行剪枝
+				        back(t+1);//一直遍历到最后，也就是一直得到最新的最优解
+				   
+		}					
+		
+	}
+}
+double bound(int j)//设置上界函数
+{
+
+	for(int f=0;f<=m;f++)
+	{
+		left[f]=b[f]-d[f];//存储剩余的背包容量，用背包容量（能装物品属性的最大值）减去已装入背包的物品属性
+	}
+	int b=curvalue;//记录背包当前总价值
+	for(int o=0;o<=m;o++)
+	{
+		
+             while(j<=n &&a[o][j]<=left[o])//判断当前节点索取物品的属性总和是否大于剩余的背包容量
+			 {
+				 left[j]-=a[o][j];//符合条件存入物品到背包中，就是背包容量减去所选的物品属性
+				 b+=v[j];//存储当前总价值
+				 j++;//向下继续取
+			 }
+		
+	}
+	if(j<=n)
+	{
+		for(int q=0;q<=m;q++)
+		{
+          b+=v[j]/a[q][j]*left[j];
+		}
+		return b;
+	}
+	
+}
+void main()
+
+{
+  
+    printf("请输入物品个数:\n");
+    scanf("%d",&n);//获取键盘输入的值，物品的数量
+	  printf("请输入物品属性个数:\n");
+    scanf("%d",&m);//获取键盘输入的值，物品属性的个数
+    printf("请依次输入物品的价值:\n");
+    for(int i=0;i<n;i++) 
+        scanf("%lf",&v[i]);//获取键盘输入的值，物品的价值
+    printf("请依次输入每个物品的属性的值:\n");
+	for(int j=0;j<m;j++){
+		for(int i=0;i<n;i++) {
+			scanf("%d",&a[j][i]);}//获取键盘输入的值，每个物品的属性
+	}
+    printf("请依次输入物品的属性限制:\n");
+     for(int w=0;w<m;w++) 
+        scanf("%d",&b[w]);//获取键盘输入的值，背包容量
+    for(int e=1;e<m;e++)
+       d[e]=0;
+    back(0);
+    printf("最大价值为:\n");
+    printf("%lf\n",bestvalue);//输出最优解
+    printf("被选中的物品有(1是选中，0是没有选中)\n");
+    for(int q=1;q<=n;q++) 
+        printf("%d ",best[q]);//输出选中物品的数组
+    printf("\n");
+
+}
+
+
